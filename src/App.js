@@ -1,25 +1,48 @@
-import logo from './logo.svg';
-import './App.css';
+import "bootstrap/dist/css/bootstrap.min.css";
+import { Container } from "react-bootstrap";
+import Teams from "./Components/teams.js";
+import TeamInfo from "./Components/teaminfo.js";
+import Testing from "./Components/testing.js";
+import { useEffect, useState } from "react";
+import { teamAPI } from "./REST/API.js";
+import { Route, Routes } from "react-router-dom";
 
-function App() {
+const App = () => {
+  //Variable for state to contain the NFL teams from fetchTeams
+  const [teams, setTeams] = useState([]);
+
+  const get = async ($ref) => {
+    const response = await teamAPI.get($ref);
+    return response;
+  };
+
+  //API call to retreive NFL teams and set teams in state to returned value
+  const fetchTeams = async () => {
+    const response = await teamAPI.getTeams();
+    setTeams(response.filter((team) => team.name !== undefined));
+  };
+
+  //On load call fetchTeams to get NFL teams from API
+  useEffect(() => {
+    console.log("Running useEffect fetchTeams from main page");
+    fetchTeams();
+  }, []);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Container className="vh-100 ">
+      <Routes>
+        <Route path="/" element={<Teams teams={teams} callRef={get} />} />
+        <Route
+          path="/team/:teamID/*"
+          element={<TeamInfo teams={teams} callRef={get} />}
+        />
+        <Route
+          path="/apilearning"
+          element={<Testing teams={teams} callRef={get} />}
+        />
+      </Routes>
+    </Container>
   );
-}
+};
 
 export default App;
